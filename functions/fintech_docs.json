@@ -1,0 +1,243 @@
+{
+  "datman_ltd": {
+    "company_info": {
+      "name": "Datman Ltd",
+      "website": "https://datman.je/",
+      "headquarters": "Jersey, Channel Islands",
+      "services": [
+        "Payment Gateway",
+        "Merchant Settlements",
+        "Order Tracking",
+        "Refund and Chargeback Management",
+        "Technical Support for Payments"
+      ],
+      "support_portal": "https://support.datman.je/portal/en/home",
+      "associated_with": "MyPay Group"
+    },
+    "kyc": {
+      "description": "KYC is completed through the Datman Merchant Portal or App. Merchants must upload full-page identity and business documents—screenshots are not accepted. The compliance team reviews submissions within 24–48 hours.",
+      "kyc_steps": [
+        "Open Merchant Portal or App",
+        "Upload valid ID (passport or driving licence)",
+        "Upload bank document (≤3 months old, in business name)",
+        "If sole trader, also upload a utility bill (≤3 months old)",
+        "Submit your application",
+        "Compliance team reviews within 24–48 hrs"
+      ],
+      "required_documents": {
+        "LimitedCompany": [
+          "Valid passport or driving licence",
+          "Bank statement, void cheque, or welcome letter (≤ 3 months old, showing company name)"
+        ],
+        "SoleTrader": [
+          "Valid passport or driving licence",
+          "Bank statement, void cheque, or welcome letter (≤ 3 months old, showing business name)",
+          "Utility bill at trading address (≤ 3 months old)"
+        ]
+      },
+      "submission_portal": "Merchant Portal or Merchant App",
+      "review_time": "24–48 hours after document submission"
+    },
+    "onboarding": {
+      "process": "New merchants register on the Datman portal. After KYC verification and review by the compliance team, the merchant account is activated.",
+      "average_time": "24–48 hours after document submission",
+      "fields_required": {
+        "ownerDetails": [
+          "title",
+          "firstName",
+          "lastName",
+          "dateOfBirth",
+          "nationality"
+        ],
+        "contactDetails": ["email", "phoneNumber"],
+        "ownerAddress": [
+          "postCode",
+          "houseNo",
+          "street",
+          "townCity",
+          "county",
+          "country",
+          "state"
+        ],
+        "companyRegisteredDetails": [
+          "companyRegisteredNumber",
+          "businessLegalName",
+          "businessURL",
+          "vatNumber"
+        ],
+        "businessDetails": ["organisationType"],
+        "businessContactDetails": ["companyEmailID", "phoneNumber"],
+        "businessAddress": [
+          "postCode",
+          "addressLine1",
+          "addressLine2",
+          "townCity",
+          "county",
+          "country",
+          "state"
+        ]
+      },
+      "document_requirements": {
+        "passport": {
+          "required_for": {
+            "countries": ["UK", "IRE", "AUS", "USA", "NZ", "CAN", "MEX"],
+            "businessTypes": [1, 2, 3, 5, 10, 11, 12]
+          },
+          "description": "Passport-related identity document",
+          "additionalFields": {
+            "ID Number": {
+              "required_for": ["AUS"]
+            }
+          }
+        },
+        "drivingLicence": {
+          "required_for": {
+            "countries": ["UK", "IRE", "AUS", "USA", "NZ", "CAN", "MEX"],
+            "businessTypes": [1, 2, 3, 5]
+          },
+          "description": "Driving licence used as proof of identity",
+          "additionalFields": {
+            "ID Number": {
+              "required_for": ["AUS", "USA"]
+            },
+            "Card number": {
+              "required_for": ["AUS"]
+            }
+          }
+        },
+        "residencyPermit": {
+          "optional": true,
+          "applicable_to": {
+            "countries": ["UK", "IRE", "AUS", "USA", "NZ", "CAN", "MEX"],
+            "businessTypes": [1, 3, 5]
+          }
+        },
+        "proofOfIdFrontSide": {
+          "optional": true,
+          "applicable_to": {
+            "countries": ["CAN", "MEX"],
+            "businessTypes": [1, 2]
+          }
+        },
+        "proofOfIdBackSide": {
+          "optional": true,
+          "applicable_to": {
+            "countries": ["CAN", "MEX"],
+            "businessTypes": [1, 2]
+          }
+        },
+        "rentalAgreement": {
+          "optional": true,
+          "applicable_to": {
+            "countries": ["UK", "IRE", "AUS", "USA", "NZ", "MEX"],
+            "businessTypes": [2, 3, 5]
+          }
+        }
+      },
+      "country_specific_requirements": {
+        "AUS": {
+          "taxInformation": {
+            "required": true,
+            "field": "ABN",
+            "pattern": "^[A-Za-z0-9-]+$",
+            "maxLength": 20
+          },
+          "requiredDocuments": ["passport", "drivingLicence"]
+        },
+        "US": {
+          "taxInformation": {
+            "required": true,
+            "field": "EIN",
+            "pattern": "^[A-Za-z0-9-]+$",
+            "maxLength": 20
+          },
+          "ssn": {
+            "required": false,
+            "pattern": "^\\d{3}-\\d{2}-\\d{4}$"
+          },
+          "requiredDocuments": ["passport", "drivingLicence"]
+        },
+        "UK": {
+          "vatNumber": {
+            "required": false,
+            "pattern": "^[A-Z]{2}[0-9A-Z]{12,15}$"
+          },
+          "requiredDocuments": ["passport", "drivingLicence", "rentalAgreement"]
+        },
+        "CAN": {
+          "requiredDocuments": [
+            "proofOfIdFrontSide",
+            "proofOfIdBackSide",
+            "drivingLicence"
+          ]
+        },
+        "MEX": {
+          "requiredDocuments": [
+            "proofOfIdFrontSide",
+            "proofOfIdBackSide",
+            "drivingLicence",
+            "rentalAgreement"
+          ]
+        }
+      }
+    },
+    "basic_fintech_ques": {
+      "what_is_datman": "Datman is a secure payment gateway solution for UK-based merchants, enabling fast and efficient card transactions.",
+      "settlement_frequency": "Merchant settlements are processed daily, excluding weekends and bank holidays."
+    },
+    "refund_related": {
+      "policy": "Refunds can be issued from the Datman admin portal. Funds typically take 3–5 business days to reflect in the shopper’s account.",
+      "merchant_guidance": "Merchants must ensure enough balance in their merchant account before processing refunds."
+    },
+    "chargeback_related": {
+      "overview": "Chargebacks are handled by the Datman risk team. Merchants are notified and can upload evidence to dispute claims.",
+      "timeline": "Merchants have up to 7 days to respond to a chargeback request.",
+      "platform_link": "https://support.datman.je/portal/en/kb/articles/chargeback-process"
+    },
+    "order_tracking": {
+      "portal": "Order tracking available for shoppers and merchants via SMS link and merchant dashboard.",
+      "customer_experience": "Shoppers receive real-time updates after placing an order via SMS."
+    },
+    "adyen_related": {
+      "integration": "Datman integrates with Adyen for processing card transactions securely across multiple currencies and platforms.",
+      "settlement_gateway": "Adyen handles acquiring services while Datman manages frontend portal and merchant reporting."
+    },
+    "foodhub_related": {
+      "connection": "Datman is a preferred payment provider for Foodhub merchants in the UK.",
+      "benefits": "Fast setup, integrated reporting, and seamless refund/settlement process for Foodhub partners."
+    },
+    "mypay_related": {
+      "relationship": "Datman is a part of the MyPay Group, providing regional payment solutions under the group umbrella.",
+      "group_site": "https://www.mypay.group/",
+      "parent_location": "Guernsey, United Kingdom"
+    },
+    "stores_merchants_connected_to_shopper": {
+      "access": "Shoppers receive SMS-based receipts or order tracking links from merchants who use Datman as payment processor.",
+      "merchant_portal": "https://portal.datman.je/"
+    },
+    "country_specific_data": {
+      "UK": {
+        "currency": "GBP",
+        "settlement": "Daily",
+        "bank_holidays": "Settlements are delayed on public and bank holidays",
+        "compliance": "FCA compliant under MyPay's oversight"
+      },
+      "Guernsey": {
+        "regulatory_body": "GFSC - Guernsey Financial Services Commission",
+        "role": "MyPay Group is headquartered here and operates regulatory functions"
+      }
+    }
+  },
+  "basic_fintech_questions": {
+    "what_is_a_payment_gateway": "A payment gateway is a technology that captures and transfers payment data from the customer to the acquirer, then communicates approval or decline back to the merchant.",
+    "difference_between_refund_and_chargeback": "A refund is initiated by the merchant to return funds to the customer. A chargeback is initiated by the customer via their bank to dispute a transaction.",
+    "what_is_kyc": "KYC stands for Know Your Customer. It is a mandatory process of verifying the identity and address of clients to prevent fraud and money laundering.",
+    "what_is_settlement": "Settlement is the process of transferring funds collected through customer payments to the merchant’s bank account.",
+    "how_long_do_settlements_take": "Settlement timelines vary by provider. Some offer daily settlements while others may take 2–5 working days.",
+    "what_is_a_chargeback": "A chargeback is a dispute raised by the cardholder with their bank to reverse a transaction. It typically involves an investigation by both the bank and the payment provider.",
+    "what_is_tokenization": "Tokenization is the process of replacing sensitive card details with a unique token to enhance payment security.",
+    "what_is_fraud_detection_in_fintech": "Fraud detection involves monitoring transaction patterns and using risk scoring, AI, or machine learning to detect suspicious activity.",
+    "what_is_psp": "A Payment Service Provider (PSP) enables merchants to accept electronic payments by integrating with acquiring banks and card networks.",
+    "what_is_compliance": "Compliance refers to adhering to regulations such as PCI-DSS, GDPR, and anti-money laundering laws to ensure legal and secure operations."
+  }
+}

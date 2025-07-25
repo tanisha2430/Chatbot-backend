@@ -1,0 +1,35 @@
+service: sls-test
+
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+
+plugins:
+  - serverless-offline
+
+custom:
+  serverless-offline:
+    httpPort: 4000  # ✅ Force serverless-offline to use port 4000
+    websocketPort: 4001
+    lambdaPort: 4002
+    albPort: 4003
+
+functions:
+  hello:
+    handler: handler.hello
+    events:
+      - http:
+          path: hello
+          method: get
+
+  chat:
+    handler: handler.chatHandler
+    timeout: 30
+    events:
+      - http:
+          path: chat
+          method: post
+          cors: true
+
+

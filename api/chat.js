@@ -6,6 +6,13 @@ const csv = require("csv-parser");
 
 dotenv.config();
 
+function setCors(res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+}
+
+
 console.log("API KEY EXISTS:", !!process.env.OPENAI_API_KEY);
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -38,6 +45,13 @@ const cardPaymentsPath = path.join(__dirname, "../data/card_payments.csv");
 const pendingFraudMap = {};
 
 module.exports.chatHandler = async (event) => {
+
+  setCors(res);
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   try {
     const body = JSON.parse(event.body);
     const userId = body.userId || body.sessionId || "default";

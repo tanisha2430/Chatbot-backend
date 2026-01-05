@@ -1,9 +1,12 @@
 service: sls-test
 
+useDotenv: true
 
 provider:
   name: aws
   runtime: nodejs18.x
+  environment:
+    OPENAI_API_KEY: ${env:OPENAI_API_KEY}
 
 plugins:
   - serverless-offline

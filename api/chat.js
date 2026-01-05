@@ -210,29 +210,48 @@
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+import dotenv from "dotenv";
 import OpenAI from "openai";
 import fs from "fs";
 import path from "path";
 import csv from "csv-parser";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+dotenv.config();
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-// ---------- CORS ----------
-function setCors(res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
-}
-
-// ---------- Load context ----------
+// Load fintech context
 const companyData = JSON.parse(
-  fs.readFileSync(path.join(__dirname, "fintech_docs.json"), "utf8")
+  fs.readFileSync(path.join(process.cwd(), "fintech_docs.json"), "utf8")
 );
 
 function flattenContext(obj, parentKey = "") {
@@ -250,16 +269,21 @@ function flattenContext(obj, parentKey = "") {
 
 const companyContext = flattenContext(companyData).join("\n");
 
-// ---------- CSV ----------
-const paymentsPath = path.join(__dirname, "../data/payments.csv");
-const cardPaymentsPath = path.join(__dirname, "../data/card_payments.csv");
+// CSV paths
+const paymentsPath = path.join(process.cwd(), "data/payments.csv");
+const cardPaymentsPath = path.join(process.cwd(), "data/card_payments.csv");
 
+// Track users pending for order ID input
 const pendingFraudMap = {};
 
-// ================== HANDLER ==================
+// ------------------ Vercel API Handler ------------------
 export default async function handler(req, res) {
-  setCors(res);
+  // Set CORS headers
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type");
 
+  // Handle preflight request
   if (req.method === "OPTIONS") {
     return res.status(200).end();
   }
@@ -269,74 +293,77 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { message, userId = "default", sessionId } = req.body;
+    const body = req.body;
+    const userId = body.userId || body.sessionId || "default";
+    const userQuery = body.message.trim();
 
-    if (!message) {
-      return res.status(400).json({ error: "Message is required" });
-    }
-
-    const userQuery = message.trim();
-    const uid = userId || sessionId || "default";
-
-    // Fraud detection
-    if (pendingFraudMap[uid] && isSuspiciousQuery(userQuery)) {
-      return res.json({
+    // If already pending and asks fraud again
+    if (pendingFraudMap[userId] && isSuspiciousQuery(userQuery)) {
+      return res.status(200).json({
         answer:
-          "You've already raised a complaint. Please provide the **Order ID**.",
+          "You've already raised a complaint. Please provide the **Order ID** to proceed.",
       });
     }
 
-    if (pendingFraudMap[uid]) {
+    // Handle follow-up for order ID
+    if (pendingFraudMap[userId]) {
       const orderId = extractOrderId(userQuery);
       if (!orderId) {
-        return res.json({ answer: "Please provide a valid Order ID." });
-      }
-
-      const orderDetails = await lookupOrder(orderId);
-      delete pendingFraudMap[uid];
-
-      if (!orderDetails) {
-        return res.json({
-          answer: `No details found for Order ID: ${orderId}`,
+        return res.status(200).json({
+          answer: "Please provide a valid Order ID to continue.",
         });
       }
 
-      return res.json({ answer: orderDetails });
+      const orderDetails = await lookupOrder(orderId);
+      delete pendingFraudMap[userId];
+
+      if (!orderDetails) {
+        return res.status(200).json({
+          answer: `I couldn't find any details for Order ID: ${orderId}. Please double-check.`,
+        });
+      }
+
+      const response = formatOrderResponse(orderDetails);
+      return res.status(200).json({ answer: response });
     }
 
+    // Detect fraud-related keywords
     if (isSuspiciousQuery(userQuery)) {
-      pendingFraudMap[uid] = true;
-      return res.json({
-        answer: "I'm sorry to hear that. Please share your **Order ID**.",
+      pendingFraudMap[userId] = true;
+      return res.status(200).json({
+        answer:
+          "I'm sorry to hear that. Could you please share your **Order ID** so I can look into the transaction for you?",
       });
     }
 
-    // OpenAI
+    // Fallback to OpenAI assistant
     const completion = await openai.chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         {
           role: "system",
-          content: `You are a fintech support assistant.\n\n${companyContext}`,
+          content: `You are a helpful fintech support assistant. Use the context below when answering:\n\n${companyContext}`,
         },
         { role: "user", content: userQuery },
       ],
     });
 
-    return res.json({
-      answer:
-        completion.choices?.[0]?.message?.content ??
-        "Unable to generate response",
-    });
+    const answer =
+      completion?.choices?.[0]?.message?.content ??
+      "Sorry, I couldn’t generate a response at the moment.";
+
+    return res.status(200).json({ answer });
   } catch (err) {
-    console.error(err);
-    return res.status(500).json({ error: err.message });
+    console.error("❌ Error:", err.message);
+    return res
+      .status(500)
+      .json({ error: "Something went wrong. " + err.message });
   }
 }
 
-// ---------- Helpers ----------
+// ------------------ Helpers ------------------
 function isSuspiciousQuery(text) {
-  return [
+  const keywords = [
     "fraud",
     "unauthorized",
     "wrong charge",
@@ -344,31 +371,55 @@ function isSuspiciousQuery(text) {
     "money gone",
     "chargeback",
     "dispute",
-  ].some((kw) => text.toLowerCase().includes(kw));
+  ];
+  return keywords.some((kw) => text.toLowerCase().includes(kw));
 }
 
 function extractOrderId(text) {
   const match = text.match(/\d{6,}/);
-  return match?.[0];
+  return match ? match[0] : null;
 }
 
 async function lookupOrder(orderId) {
   const payments = await findInCSV(paymentsPath, "order_ref", orderId);
-  if (payments) return payments;
+  if (payments) return { ...payments, source: "payments" };
 
   const cardPayments = await findInCSV(cardPaymentsPath, "order_id", orderId);
-  return cardPayments;
+  if (cardPayments) return { ...cardPayments, source: "card" };
+
+  return null;
 }
 
-function findInCSV(filePath, key, value) {
+function findInCSV(filePath, key, valueToMatch) {
   return new Promise((resolve, reject) => {
-    let found = null;
+    let foundRow = null;
     fs.createReadStream(filePath)
       .pipe(csv())
       .on("data", (row) => {
-        if (row[key] === value) found = row;
+        if (row[key] === valueToMatch) {
+          foundRow = row;
+        }
       })
-      .on("end", () => resolve(found))
+      .on("end", () => resolve(foundRow))
       .on("error", reject);
   });
+}
+
+function formatOrderResponse(order) {
+  const id = order.order_ref || order.order_id;
+  const date = order.transaction_time || order.time;
+  const gross = order.gross || order.total;
+  const fee = order.fee || order.fees || "N/A";
+  const net = order.net || order.payed || "N/A";
+  const source = order.source === "card" ? "card_payments" : "payments";
+
+  return {
+    type: "transaction_found",
+    orderId: id,
+    date,
+    gross,
+    fee,
+    net,
+    source,
+  };
 }
